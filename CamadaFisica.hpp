@@ -8,6 +8,17 @@ using namespace std;
 
 #define limpar system("clear");
 
+// Suporte
+
+string converter_mensagem_em_bit(string mensagem);
+
+// Construir Sinal
+
+void construir_sinal(vector<char> quadro);
+void construir_sinal_binario(vector<char> quadro);
+void construir_sinal_bipolar(vector<char> quadro);
+void construir_sinal_manchester(vector<char> quadro);
+
 // Transmissão
 
 void aplicacao_transmissora();

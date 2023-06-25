@@ -349,8 +349,8 @@ void camada_de_aplicacao_receptora(vector<char> quadro) {
         for (int j = i; (j < (i+8)); j++) {
             byte += quadro[j];
         }
-        int valor = stoi(byte, nullptr, 2); // Converte a sequência de bits em um valor inteiro
-        char caractere = static_cast<char>(valor); // Converte o valor inteiro em um caractere
+        int valor = stoi(byte, nullptr, 2);
+        char caractere = static_cast<char>(valor);
         mensagem += caractere;
     }
 
