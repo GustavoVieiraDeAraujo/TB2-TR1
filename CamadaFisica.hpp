@@ -1,8 +1,12 @@
 #include <string>
 #include <vector>
+#include <chrono>
+#include <thread>
 #include <iostream>
 
 using namespace std;
+
+#define limpar system("clear");
 
 // Transmissão
 

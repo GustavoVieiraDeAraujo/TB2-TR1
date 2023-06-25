@@ -13,6 +13,152 @@ string converter_mensagem_em_bit(string mensagem){
     return quadro;
 }
 
+// Construir Sinal
+
+void construir_sinal_binario(vector<char> quadro){
+    int largura_desenho_em_espaco;
+    int maxima_largura_desenho_em_espaco = 35;
+    int numero_de_espacos_para_desenhar_bit = 4;
+
+    int diferenca = ((quadro.size()*numero_de_espacos_para_desenhar_bit)-maxima_largura_desenho_em_espaco);
+    if ( diferenca > 0){
+        largura_desenho_em_espaco = maxima_largura_desenho_em_espaco;
+    } else {
+        largura_desenho_em_espaco = quadro.size();
+    }
+
+    string segunda_linha, terceira_linha, quarta_linha, quinta_linha;
+    segunda_linha = terceira_linha = quarta_linha = quinta_linha = "|";
+    
+    char ultimo_bit_desenhado='i';
+
+    for (int i = 0; i < largura_desenho_em_espaco; i++) {
+        if ( quadro[i] == '1' && ultimo_bit_desenhado == 'i'){
+            segunda_linha += "***";
+            terceira_linha += "   ";
+            quarta_linha += "   ";
+            quinta_linha += "   ";
+            ultimo_bit_desenhado = '1';
+        } else if ( quadro[i] == '0' && ultimo_bit_desenhado == 'i'){
+            segunda_linha += "   ";
+            terceira_linha += "   ";
+            quarta_linha += "   ";
+            quinta_linha += "***";
+            ultimo_bit_desenhado = '0';
+        } else if (quadro[i] == '1' && quadro[i] != ultimo_bit_desenhado){
+            segunda_linha += "****";
+            terceira_linha += "*   ";
+            quarta_linha += "*   ";
+            quinta_linha += "*   ";
+            ultimo_bit_desenhado = '1';
+        } else if (quadro[i] == '1' && quadro[i] == ultimo_bit_desenhado){
+            segunda_linha += "***";
+            terceira_linha += "   ";
+            quarta_linha += "   ";
+            quinta_linha += "   ";
+            ultimo_bit_desenhado = '1';
+        } else if (quadro[i] == '0' && quadro[i] != ultimo_bit_desenhado){
+            segunda_linha += "*   ";
+            terceira_linha += "*   ";
+            quarta_linha += "*   ";
+            quinta_linha += "****";
+            ultimo_bit_desenhado = '0';
+        } else if (quadro[i] == '0' && quadro[i] == ultimo_bit_desenhado){
+            segunda_linha += "   ";
+            terceira_linha += "   ";
+            quarta_linha += "   ";
+            quinta_linha += "***";
+            ultimo_bit_desenhado = '0';
+        }
+    }
+
+    string primeira_linha, sexta_linha;
+    primeira_linha = sexta_linha = "|";
+    
+    for(int i = 0; i < (segunda_linha.length()-1); i++){
+        primeira_linha += "-";
+        sexta_linha += "-";
+    }
+    primeira_linha += "|";
+    sexta_linha += "|";
+
+    segunda_linha += "|";
+    terceira_linha += "|";
+    quarta_linha += "|";
+    quinta_linha += "|";
+
+    cout << primeira_linha << endl;
+    cout << segunda_linha << endl;
+    cout << terceira_linha << endl;
+    cout << quarta_linha << endl;
+    cout << quinta_linha << endl;
+    cout << sexta_linha << endl;
+}
+
+void construir_sinal_manchester(vector<char> quadro){
+    int tamanho_linha = ((quadro.size()*5)/2);
+
+    string primeira_linha="|";
+    string sexta_linha="|";
+    for(int i = 0; i < (tamanho_linha);i++){
+        primeira_linha+='-';
+        sexta_linha+='-';
+    }
+    primeira_linha+="|";
+    sexta_linha+="|";
+
+    string segunda_linha="|";
+    string terceira_linha="|";
+    string quarta_linha="|";
+    string quinta_linha="|";
+    for (int i = 0; i < quadro.size(); i += 2) {
+        string bit_codificado;
+        for (int j = i; (j < (i+2)); j++) {
+            bit_codificado += quadro[j];
+        }
+        terceira_linha+="  *  ";
+        quarta_linha+= "  *  ";
+        if (bit_codificado == "01"){
+            segunda_linha+="  ***";
+            quinta_linha+="***  ";
+        } else {
+            segunda_linha+="***  ";
+            quinta_linha+="  ***";
+        }
+    }
+    segunda_linha+="|";
+    terceira_linha+="|";
+    quarta_linha+="|";
+    quinta_linha+="|";
+
+    cout << primeira_linha << endl;
+    cout << segunda_linha << endl;
+    cout << terceira_linha << endl;
+    cout << quarta_linha << endl;
+    cout << quinta_linha << endl;
+    cout << sexta_linha << endl;
+
+}
+
+void construir_sinal_bipolar(vector<char> quadro){
+    cout << "temp";
+}
+
+void construir_sinal(vector<char> quadro){
+    int tipo_de_codificacao = 0;
+
+    switch (tipo_de_codificacao) {
+        case 0:
+            construir_sinal_binario(quadro);
+            break;
+        case 1:
+            construir_sinal_manchester(quadro);
+            break;
+        case 2:
+            construir_sinal_bipolar(quadro);
+            break;
+    }
+}
 
 // Transmissão
 
@@ -96,7 +242,7 @@ vector<char> camada_fisica_transmissora_codificacao_bipolar(vector<char> fluxo_b
     }
 
     vector<char> fluxo_bruto_de_bits_codificado(construir_quadro_codificado.begin(), construir_quadro_codificado.end());
-    
+
     return fluxo_bruto_de_bits_codificado;
 }
 
@@ -110,6 +256,11 @@ void meio_de_comunicacao(vector<char> fluxo_bruto_de_bits) {
         fluxo_bruto_de_bits_ponto_b.push_back(bit);
     }
 
+    limpar;
+    cout << "O seguinte sinal esta sendo enviado:" << endl;
+    construir_sinal(fluxo_bruto_de_bits_ponto_b);
+    this_thread::sleep_for(chrono::seconds(5));
+    limpar;
     camada_fisica_receptora(fluxo_bruto_de_bits_ponto_b);
 }
 
@@ -135,22 +286,75 @@ void camada_fisica_receptora(vector<char> quadro) {
 }
 
 vector<char> camada_fisica_receptora_decodificacao_binaria(vector<char> quadro) {
-    vector<char> fluxo_bruto_de_bits_decodificado;
+    string construir_quadro_decodificado;
+    
+    for (int i = 0; i < quadro.size(); i += 8) {
+        string byte;
+        for (int j = i; (j < (i+8)); j++) {
+            byte += quadro[j];
+        }
+        if (byte == "00110000"){
+            construir_quadro_decodificado+="0";
+        } else {
+            construir_quadro_decodificado+="1";
+        }
+    }
+
+    vector<char> fluxo_bruto_de_bits_decodificado(construir_quadro_decodificado.begin(), construir_quadro_decodificado.end());
     return fluxo_bruto_de_bits_decodificado;
 }
 
 vector<char> camada_fisica_receptora_decodificacao_manchester(vector<char> quadro) {
-    vector<char> fluxo_bruto_de_bits_decodificado;
+    string construir_quadro_decodificado;
+    
+    for (int i = 0; i < quadro.size(); i += 2) {
+        string clock;
+        for (int j = i; (j < (i+2)); j++) {
+            clock += quadro[j];
+        }
+        if (clock == "01"){
+            construir_quadro_decodificado+="0";
+        } else {
+            construir_quadro_decodificado+="1";
+        }
+    }
+
+    vector<char> fluxo_bruto_de_bits_decodificado(construir_quadro_decodificado.begin(), construir_quadro_decodificado.end());
     return fluxo_bruto_de_bits_decodificado;
 }
 
 vector<char> camada_fisica_receptora_decodificacao_bipolar(vector<char> quadro) {
-    vector<char> fluxo_bruto_de_bits_decodificado;
+    string construir_quadro_decodificado;
+
+    for(int i=0; i < quadro.size(); i++){
+        if (quadro[i] == '0'){
+            construir_quadro_decodificado+='0';
+        } else if ( quadro[i] == '-'){
+            construir_quadro_decodificado+='1';
+            i+=1;
+        } else {
+            construir_quadro_decodificado+='1';
+        }
+    }
+
+    vector<char> fluxo_bruto_de_bits_decodificado(construir_quadro_decodificado.begin(), construir_quadro_decodificado.end());
     return fluxo_bruto_de_bits_decodificado;
 }
 
 void camada_de_aplicacao_receptora(vector<char> quadro) {
-    aplicacao_receptora("inicio");
+    string mensagem;
+
+    for (int i = 0; i < quadro.size(); i += 8) {
+        string byte;
+        for (int j = i; (j < (i+8)); j++) {
+            byte += quadro[j];
+        }
+        int valor = stoi(byte, nullptr, 2); // Converte a sequência de bits em um valor inteiro
+        char caractere = static_cast<char>(valor); // Converte o valor inteiro em um caractere
+        mensagem += caractere;
+    }
+
+    aplicacao_receptora(mensagem);
 }
 
 void aplicacao_receptora(string mensagem) {
