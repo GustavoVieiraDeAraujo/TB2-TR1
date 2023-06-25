@@ -1,5 +1,19 @@
 #include "./CamadaFisica.hpp"
 
+// Suporte
+
+string converter_mensagem_em_bit(string mensagem){
+    string quadro;
+    for (char caracter : mensagem) {
+        int caracter_em_decimal = static_cast<unsigned char>(caracter);
+        for (int i = 7; i >= 0; --i) {
+            quadro+=((caracter_em_decimal & (1 << i)) ? '1' : '0');
+        }
+    }
+    return quadro;
+}
+
+
 // Transmissão
 
 void aplicacao_transmissora(void) {
@@ -12,6 +26,11 @@ void aplicacao_transmissora(void) {
 
 void camada_de_aplicacao_transmissora(string mensagem) {
     vector<char> quadro;
+
+    for (char bit : converter_mensagem_em_bit(mensagem)){
+        quadro.push_back(bit);
+    }
+
     camada_fisica_transmissora(quadro);
 }
 
@@ -36,16 +55,48 @@ void camada_fisica_transmissora(vector<char> quadro) {
 
 vector<char> camada_fisica_transmissora_codificacao_binaria(vector<char> fluxo_bruto_de_bits) {
     vector<char> fluxo_bruto_de_bits_codificado;
+
+    for(char bit_fluxo : fluxo_bruto_de_bits){
+        string bit_fluxo_string(1, bit_fluxo);
+        for(char bit_fluxo_codificado : converter_mensagem_em_bit(bit_fluxo_string)){
+            fluxo_bruto_de_bits_codificado.push_back(bit_fluxo_codificado);
+        }
+    }
+
     return fluxo_bruto_de_bits_codificado;
 }
 
 vector<char> camada_fisica_transmissora_codificacao_manchester(vector<char> fluxo_bruto_de_bits) {
     vector<char> fluxo_bruto_de_bits_codificado;
+
+    for (char bit : fluxo_bruto_de_bits) {
+        if (bit == '0') {
+            fluxo_bruto_de_bits_codificado.push_back('0');
+            fluxo_bruto_de_bits_codificado.push_back('1');
+        } else {
+            fluxo_bruto_de_bits_codificado.push_back('1');
+            fluxo_bruto_de_bits_codificado.push_back('0');
+        }
+    }
+
     return fluxo_bruto_de_bits_codificado;
 }
 
 vector<char> camada_fisica_transmissora_codificacao_bipolar(vector<char> fluxo_bruto_de_bits) {
-    vector<char> fluxo_bruto_de_bits_codificado;
+    string qual_foi_ultimo_bit = "-1";
+    string construir_quadro_codificado;
+
+    for (char bit : fluxo_bruto_de_bits) {
+        if (bit == '0') {
+            construir_quadro_codificado+="0";
+        } else {
+            construir_quadro_codificado += ((qual_foi_ultimo_bit == "1") ? "-1" : "1");
+            qual_foi_ultimo_bit = ((qual_foi_ultimo_bit == "1") ? "-1" : "1");
+        }
+    }
+
+    vector<char> fluxo_bruto_de_bits_codificado(construir_quadro_codificado.begin(), construir_quadro_codificado.end());
+    
     return fluxo_bruto_de_bits_codificado;
 }
 
