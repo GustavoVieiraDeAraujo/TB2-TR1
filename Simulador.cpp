@@ -1,5 +1,3 @@
-// Teleinformática e Redes 2023.1, UnB
-// Prof. Marcelo Marotta
 // Simulador de Teste, onde o objetivo é representar três formatos de codificações, sendo eles: Codificação Binária, Codificação Manchester e codificação Bipolar. Ao iniciar a simulação, o usuário deverá enviar via terminal a mensagem que será transmitida, e escolher qual codificação será utilizada em todo processo. Para selecionar a codificação, o usuário deverá digitar apenas o número indicado em cada codificação.
 #include "./CamadaFisica.hpp"
 #include "./MontagemGrafico.hpp"
