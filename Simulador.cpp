@@ -1,5 +1,6 @@
 // Simulador de Teste, onde o objetivo é representar três formatos de codificações, sendo eles: Codificação Binária, Codificação Manchester e codificação Bipolar. Ao iniciar a simulação, o usuário deverá enviar via terminal a mensagem que será transmitida, e escolher qual codificação será utilizada em todo processo. Para selecionar a codificação, o usuário deverá digitar apenas o número indicado em cada codificação.
 #include "./CamadaFisica.hpp"
+#include "./CamadaEnlace.hpp"
 #include "./MontagemGrafico.hpp"
 
 int main(void) {
@@ -15,8 +16,11 @@ int main(void) {
     vector<char> quadro_enviado;
     quadro_enviado = camada_de_aplicacao_transmissora(mensagem_enviada);
 
+    vector<char> quadro_enquadrado;
+    quadro_enquadrado = camada_enlace_dados_transmissora(quadro_enviado);
+
     vector<char> trem_de_bits_enviado;
-    trem_de_bits_enviado = camada_fisica_transmissora(quadro_enviado, codificacao);
+    trem_de_bits_enviado = camada_fisica_transmissora(quadro_enquadrado, codificacao);
 
 
     vector<char> trem_de_bits_recebido;
@@ -35,6 +39,5 @@ int main(void) {
     mensagem_recebida = camada_de_aplicacao_receptora(quadro_recebido);
 
     aplicacao_receptora(mensagem_recebida);
-
     return 0;
 }
