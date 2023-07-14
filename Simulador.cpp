@@ -35,8 +35,11 @@ int main(void) {
     vector<char> quadro_recebido;
     quadro_recebido = camada_fisica_receptora(trem_de_bits_recebido, codificacao);
 
+    vector<char> quadro_sem_enquadramento;
+    quadro_sem_enquadramento = camada_enlace_dados_receptora(quadro_recebido);
+
     string mensagem_recebida;
-    mensagem_recebida = camada_de_aplicacao_receptora(quadro_recebido);
+    mensagem_recebida = camada_de_aplicacao_receptora(quadro_sem_enquadramento);
 
     aplicacao_receptora(mensagem_recebida);
     return 0;

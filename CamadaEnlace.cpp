@@ -16,7 +16,7 @@ vector<char> converter_decimal_em_byte (int numero) {
 
 int converter_byte_em_decimal (vector<char> cabecalho) {
     int index = 7;
-    int numero;
+    int numero = 0;
 
     for (char byte : cabecalho) {
         if ( index < 0) {
@@ -65,14 +65,6 @@ vector<char> camada_enlace_dados_transmissora_enquadramento_contagem_de_caracter
 
     while (quadro_bruto.size() > 0) {
         vector<char> cabecalho = converter_decimal_em_byte(tamanho_do_quadro);
-        // //Teste
-        // cout << quadro_bruto.front() << endl;
-        // cout << "TESTE" << endl;
-        // for (int i = 0; i < quadro_bruto.size(); i++) {
-        //     cout << quadro_bruto[i];
-        // }
-        // cout << endl;
-
 
         for (char bit : cabecalho) {
             quadro_com_cabecalho.push_back(bit);
@@ -143,7 +135,7 @@ vector<char> camada_enlace_dados_receptora_enquadramento (vector<char> quadro_en
 
 vector<char> camada_enlace_dados_receptora_enquadramento_contagem_de_caracteres (vector<char> quadro_bruto) {
     int tamanho_do_byte = 8;
-    vector<char> quadro_com_cabecalho;
+    vector<char> quadro;
 
     while (quadro_bruto.size() > 0) {
         vector<char> cabecalho;
@@ -156,21 +148,36 @@ vector<char> camada_enlace_dados_receptora_enquadramento_contagem_de_caracteres 
 
         tamanho_do_quadro = converter_byte_em_decimal(cabecalho);
 
-        // for ()
-
-
-
-        // vector<char> cabecalho = converter_decimal_em_byte(tamanho_do_quadro);
-
-        // for (char bit : cabecalho) {
-        //     quadro_com_cabecalho.push_back(bit);
-        // }
-
-        // for (int i = 0; i < tamanho_do_quadro; i++) {
-        //     quadro_com_cabecalho.push_back(quadro_bruto[0]);
-        //     quadro_bruto.erase(quadro_bruto.begin());
-        // }
+        for (int i = 0; i < tamanho_do_quadro; i++) {
+            quadro.push_back(quadro_bruto[0]);
+            quadro_bruto.erase(quadro_bruto.begin());
+        }
     }
 
-    return quadro_com_cabecalho;
+    return quadro;
+}
+
+vector<char> camada_enlace_dados_receptora_enquadramento_insercao_de_bytes (vector<char> quadro_bruto) {
+    int tamanho_do_quadro = 8;
+    vector<char> quadro;
+    string flag = "11111111";
+    string esc = "00011011";
+
+    while (quadro_bruto.size() > 0) {
+        for (char i : flag) {
+            quadro_bruto.erase(quadro_bruto.begin());
+        }
+
+        for (int i = 0; i < tamanho_do_quadro; i++) {
+            quadro.push_back(quadro_bruto[0]);
+            quadro_bruto.erase(quadro_bruto.begin());
+        }
+
+        for (char i : flag) {
+            quadro_bruto.erase(quadro_bruto.begin());
+        }
+    }
+
+    cout << quadro.size() << endl;
+    return quadro;
 }
