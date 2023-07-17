@@ -7,8 +7,8 @@ vector<char> converter_decimal_em_byte (int numero) {
  
     string binario = bitset<n>(numero).to_string();
 
-    for (char byte : binario) {
-        cabecalho.push_back(byte);
+    for (char bit : binario) {
+        cabecalho.push_back(bit);
     }
 
     return cabecalho;
@@ -18,12 +18,12 @@ int converter_byte_em_decimal (vector<char> cabecalho) {
     int index = 7;
     int numero = 0;
 
-    for (char byte : cabecalho) {
+    for (char bit : cabecalho) {
         if ( index < 0) {
             break;
         }
 
-        int num = byte - '0';
+        int num = bit - '0';
         if (num == 1) {
             numero += pow(2, index);
         }
@@ -38,7 +38,9 @@ vector<char> camada_enlace_dados_transmissora (vector<char> quadro) {
     vector<char> quadro_com_enquadramento;
     quadro_com_enquadramento = camada_enlace_dados_transmissora_enquadramento(quadro);
 
-    // camada_enlace_dados_transmissora_controle_de_erro(quadro);
+    vector<char> quadro_com_controle_de_erro;
+    quadro_com_controle_de_erro = camada_enlace_dados_transmissora_controle_de_erro(quadro_com_enquadramento);
+
     return quadro_com_enquadramento;
 }
 
@@ -104,16 +106,50 @@ vector<char> camada_enlace_dados_transmissora_enquadramento_insercao_de_bytes (v
     return quadro_com_cabecalho;
 }
 
-// void camada_enlace_dados_transmissora_controle_de_erro (vector<char> quadro) {
+vector<char> camada_enlace_dados_transmissora_controle_de_erro (vector<char> quadro) {
+    int tipo_de_controle_de_erro = 0;
+    vector<char> quadro_com_controle_de_erro;
 
-// }
+    switch (tipo_de_controle_de_erro) {
+        case 0: //bit de paridade par
+            break;
+        case 1: //CRC
+            break;
+    }
+
+    return quadro_com_controle_de_erro;
+}
+
+vector<char> camada_enlace_dados_transmissora_controle_de_erro_bit_paridade_par (vector<char> quadro) {
+    int valor_bit_paridade = 0;
+
+    for (char bit : quadro) {
+        int num = bit - '0';
+        valor_bit_paridade = num ^ valor_bit_paridade;
+    }
+
+    quadro.push_back(valor_bit_paridade);
+
+    return quadro;
+}
+
+vector<char> camada_enlace_dados_transmissora_controle_de_erro_crc (vector<char> quadro) {
+    string polinomio_gerador = "0010";
+
+    return quadro;
+}
+
+
+
 
 vector<char> camada_enlace_dados_receptora (vector<char> quadro_com_enquadramento) {
-    vector<char> quadro;
-    quadro = camada_enlace_dados_receptora_enquadramento(quadro_com_enquadramento);
+    vector<char> quadro_sem_enquadramento;
+    quadro_sem_enquadramento = camada_enlace_dados_receptora_enquadramento(quadro_com_enquadramento);
 
-    // camada_enlace_dados_receptora_controle_de_erro(quadro);
-    return quadro;
+    vector<char> quadro_detectado;
+    quadro_detectado = camada_enlace_dados_receptora_controle_de_erro(quadro_sem_enquadramento);
+
+    return quadro_detectado;
 }
 
 vector<char> camada_enlace_dados_receptora_enquadramento (vector<char> quadro_encapsulado) {
@@ -179,5 +215,39 @@ vector<char> camada_enlace_dados_receptora_enquadramento_insercao_de_bytes (vect
     }
 
     cout << quadro.size() << endl;
+    return quadro;
+}
+
+vector<char> camada_enlace_dados_receptora_controle_de_erro (vector<char> quadro) {
+    int tipo_de_controle_de_erro = 0;
+    vector<char> quadro_controle_feito;
+
+    switch (tipo_de_controle_de_erro) {
+        case 0: //bit de paridade par
+            quadro_controle_feito = camada_enlace_dados_receptora_controle_de_erro_bit_paridade_par(quadro);
+            break;
+        case 1: //CRC
+            break;
+    }
+
+    return quadro_controle_feito;
+}
+
+vector<char> camada_enlace_dados_receptora_controle_de_erro_bit_paridade_par (vector<char> quadro) {
+    int valor_bit_paridade_obtido = 0;
+    int bit_paridade = quadro.back() - '0';
+    quadro.pop_back();
+
+    for (char bit : quadro) {
+        int num = bit - '0';
+        valor_bit_paridade_obtido = num ^ valor_bit_paridade_obtido;
+    }
+
+    if (valor_bit_paridade_obtido == bit_paridade) {
+        cout << "Deu certo!" << endl;
+    } else {
+        cout << "ERRO DETECTADO!" << endl;
+    }
+
     return quadro;
 }
