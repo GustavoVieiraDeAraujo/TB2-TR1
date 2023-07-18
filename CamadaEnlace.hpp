@@ -21,7 +21,7 @@ vector<char> camada_enlace_dados_transmissora_controle_de_erro_bit_paridade_par 
 vector<char> camada_enlace_dados_transmissora_controle_de_erro_crc (vector<char> quadro);
 
 
-vector<char> camada_enlace_dados_receptora (vector<char> quadro_com_enquadramento);
+vector<char> camada_enlace_dados_receptora (vector<char> quadro_recebido);
 vector<char> camada_enlace_dados_receptora_enquadramento (vector<char> quadro_encapsulado);
 vector<char> camada_enlace_dados_receptora_enquadramento_contagem_de_caracteres (vector<char> quadro_bruto);
 vector<char> camada_enlace_dados_receptora_enquadramento_insercao_de_bytes (vector<char> quadro_bruto);

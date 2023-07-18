@@ -41,7 +41,7 @@ vector<char> camada_enlace_dados_transmissora (vector<char> quadro) {
     vector<char> quadro_com_controle_de_erro;
     quadro_com_controle_de_erro = camada_enlace_dados_transmissora_controle_de_erro(quadro_com_enquadramento);
 
-    return quadro_com_enquadramento;
+    return quadro_com_controle_de_erro;
 }
 
 vector<char> camada_enlace_dados_transmissora_enquadramento (vector<char> quadro) {
@@ -102,7 +102,6 @@ vector<char> camada_enlace_dados_transmissora_enquadramento_insercao_de_bytes (v
         }
     }
 
-    cout << quadro_com_cabecalho.size() << endl;
     return quadro_com_cabecalho;
 }
 
@@ -112,6 +111,7 @@ vector<char> camada_enlace_dados_transmissora_controle_de_erro (vector<char> qua
 
     switch (tipo_de_controle_de_erro) {
         case 0: //bit de paridade par
+            quadro_com_controle_de_erro = camada_enlace_dados_transmissora_controle_de_erro_bit_paridade_par(quadro);
             break;
         case 1: //CRC
             break;
@@ -128,7 +128,10 @@ vector<char> camada_enlace_dados_transmissora_controle_de_erro_bit_paridade_par 
         valor_bit_paridade = num ^ valor_bit_paridade;
     }
 
-    quadro.push_back(valor_bit_paridade);
+    string bit_paridade = to_string(valor_bit_paridade);
+    for (char bit_p : bit_paridade) {
+        quadro.push_back(bit_p);
+    }
 
     return quadro;
 }
@@ -142,14 +145,14 @@ vector<char> camada_enlace_dados_transmissora_controle_de_erro_crc (vector<char>
 
 
 
-vector<char> camada_enlace_dados_receptora (vector<char> quadro_com_enquadramento) {
+vector<char> camada_enlace_dados_receptora (vector<char> quadro_recebido) {
+    vector<char> quadro_deteccao_feita;
+    quadro_deteccao_feita = camada_enlace_dados_receptora_controle_de_erro(quadro_recebido);
+
     vector<char> quadro_sem_enquadramento;
-    quadro_sem_enquadramento = camada_enlace_dados_receptora_enquadramento(quadro_com_enquadramento);
+    quadro_sem_enquadramento = camada_enlace_dados_receptora_enquadramento(quadro_deteccao_feita);
 
-    vector<char> quadro_detectado;
-    quadro_detectado = camada_enlace_dados_receptora_controle_de_erro(quadro_sem_enquadramento);
-
-    return quadro_detectado;
+    return quadro_sem_enquadramento;
 }
 
 vector<char> camada_enlace_dados_receptora_enquadramento (vector<char> quadro_encapsulado) {
@@ -214,7 +217,6 @@ vector<char> camada_enlace_dados_receptora_enquadramento_insercao_de_bytes (vect
         }
     }
 
-    cout << quadro.size() << endl;
     return quadro;
 }
 
@@ -235,14 +237,16 @@ vector<char> camada_enlace_dados_receptora_controle_de_erro (vector<char> quadro
 
 vector<char> camada_enlace_dados_receptora_controle_de_erro_bit_paridade_par (vector<char> quadro) {
     int valor_bit_paridade_obtido = 0;
-    int bit_paridade = quadro.back() - '0';
+    int bit_paridade = 0;
+
+    bit_paridade = quadro.back() - '0';
     quadro.pop_back();
 
     for (char bit : quadro) {
         int num = bit - '0';
         valor_bit_paridade_obtido = num ^ valor_bit_paridade_obtido;
     }
-
+    
     if (valor_bit_paridade_obtido == bit_paridade) {
         cout << "Deu certo!" << endl;
     } else {
@@ -251,3 +255,5 @@ vector<char> camada_enlace_dados_receptora_controle_de_erro_bit_paridade_par (ve
 
     return quadro;
 }
+
+// vector<char> camada_enlace_dados_receptora_controle_de_erro_crc (vector<char> quadro) {}
