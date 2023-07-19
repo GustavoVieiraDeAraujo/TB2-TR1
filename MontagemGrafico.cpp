@@ -29,13 +29,6 @@ void construir_sinal_binario(vector<char> quadro) {
         largura_desenho_em_espaco = quadro.size();
     }
 
-    // Imprimindo o sinal completo
-    for (int i = 0; i < quadro.size(); i++) {
-        cout << quadro[i];
-    }
-
-    cout << "\n";
-
     string segunda_linha, terceira_linha, quarta_linha, quinta_linha;
     segunda_linha = terceira_linha = quarta_linha = quinta_linha = "|";
 
@@ -178,13 +171,6 @@ void construir_sinal_bipolar(vector<char> quadro) {
 
     string segunda_linha, terceira_linha, quarta_linha, quinta_linha, sexta_linha, setima_linha, oitava_linha;
     segunda_linha = terceira_linha = quarta_linha = quinta_linha = sexta_linha = setima_linha = oitava_linha = "|";
-
-    // Imprimindo o sinal completo
-    for (int i = 0; i < quadro.size(); i++) {
-        cout << quadro[i];
-    }
-
-    cout << "\n";
 
     // Construção do Gráfico
     for (int i = 0; i < largura_desenho_em_espaco; i++) {

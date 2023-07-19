@@ -23,7 +23,7 @@ vector<char> camada_fisica_transmissora_codificacao_manchester(vector<char> quad
 
 // Comunicação
 
-vector<char> meio_de_comunicacao(vector<char> fluxo_bruto_de_bits);
+vector<char> meio_de_comunicacao(vector<char> fluxo_bruto_de_bits, int porcentagem_de_erros);
 
 // Recepçao
 

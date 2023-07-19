@@ -2,6 +2,10 @@
 #include "./MontagemGrafico.hpp"
 
 #include <string>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
 
 // Suporte
 
@@ -118,13 +122,22 @@ vector<char> camada_fisica_transmissora_codificacao_bipolar(vector<char> fluxo_b
 // Comunicação
 
 // Transformação de um trem de bit transmissor para um trem de bit receptor.
-vector<char> meio_de_comunicacao(vector<char> fluxo_bruto_de_bits) {
+vector<char> meio_de_comunicacao(vector<char> fluxo_bruto_de_bits, int porcentagem_de_erros) {
     vector<char> fluxo_bruto_de_bits_ponto_a, fluxo_bruto_de_bits_ponto_b;
     fluxo_bruto_de_bits_ponto_a = fluxo_bruto_de_bits; // Trem de bit receptor
 
-    // Ambos os vetores possuem o mesmo valor, esta etapa tem como objivo representar um meio de comunicação entre o dispositivo que está transmitindo e o dispositivo que está recebendo
-    for (char bit : fluxo_bruto_de_bits_ponto_a) { 
-        fluxo_bruto_de_bits_ponto_b.push_back(bit);
+    for (char bit : fluxo_bruto_de_bits_ponto_a) {
+        int probabilidade = ("%d ", rand() % 100);
+        if (probabilidade < porcentagem_de_erros) {
+            cout << "ERRO ADICIONADO! Porcentagem Ativada: " << probabilidade << "%" << endl;
+            if (bit == '0') {
+                fluxo_bruto_de_bits_ponto_b.push_back('1');
+            } else {
+                fluxo_bruto_de_bits_ponto_b.push_back('0');
+            }
+        } else {
+            fluxo_bruto_de_bits_ponto_b.push_back(bit);
+        }
     }
     
     return fluxo_bruto_de_bits_ponto_b; // Trem de bit transmissor
