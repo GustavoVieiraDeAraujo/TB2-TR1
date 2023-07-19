@@ -23,9 +23,9 @@ string converter_mensagem_em_bit(string mensagem) {
 // Função para receber a mensagem da simulação, enviada pelo usuário via terminal
 string aplicacao_transmissora(void) {
     string mensagem;
-    cout << "Digite uma mensagem:" << endl;
+    cout << "Digite uma mensagem: ";
     getline(cin, mensagem); // Mensagem a a ser encaminhada
-    cout << "A mensagem e: ";
+    cout << "A mensagem é: ";
     cout << mensagem << endl;
 
     return mensagem;

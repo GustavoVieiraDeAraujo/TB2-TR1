@@ -121,7 +121,8 @@ void construir_sinal_manchester(vector<char> quadro) {
         cout << quadro[i];
     }
 
-    cout << "\n";
+    cout << endl;
+    cout << endl;
 
     // Construção do Gráfico
     for (int i = 0; i < largura_desenho_em_espaco; i += 2) {

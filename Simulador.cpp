@@ -9,8 +9,9 @@ int main(void) {
 
     // Estrutura para escolher qual formato de codificação será utilizado
     int codificacao;
-    cout << "Escolha a Codificação (Digite somente o número indicado a codificação desejada): [0] Codificação Binária | [1] Codificação Manchester | [2] Codificação Bipolar:" << endl;
+    cout << "Escolha a Codificação (Digite somente o número indicado a codificação desejada): [0] Codificação Binária | [1] Codificação Manchester | [2] Codificação Bipolar: ";
     cin >> codificacao; // Codificação Selecionada
+    cout << endl;
 
     // Função que transforma a mensagem em um quadro composto por bits
     vector<char> quadro_enviado;
