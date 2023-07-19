@@ -34,6 +34,44 @@ int converter_byte_em_decimal (vector<char> cabecalho) {
     return numero;
 }
 
+vector<char> divisao_de_bit (vector<char> quadro, vector<char> polinomio_gerador) {
+    int repeticoes = quadro.size() - (polinomio_gerador.size() - 1);
+    vector<char> resto_da_divisao;
+    vector<char> parte_do_divisor;
+    vector<char> divisor;
+
+    for (int i = 0; i < repeticoes; i++) {
+        
+        for (int x = 0; x < polinomio_gerador.size(); x++) {
+            if (i == 0 || x == 0) {
+                parte_do_divisor.push_back(quadro.front());
+                quadro.erase(quadro.begin());
+            }
+            
+            if (parte_do_divisor[0] == '0') {
+                divisor = {'0', '0', '0', '0'};
+            } else {
+                divisor = polinomio_gerador;
+            }
+
+            int num1 = parte_do_divisor[x] - '0';
+            int num2 = divisor[x] - '0';
+            int resultado_int = num1 ^ num2;
+
+            string resultado_string = to_string(resultado_int);
+            char resultado_char = resultado_string[0];
+            resto_da_divisao.push_back(resultado_char);
+
+        }
+        
+        parte_do_divisor = resto_da_divisao;
+        parte_do_divisor.erase(parte_do_divisor.begin());
+        resto_da_divisao.clear();
+    }
+
+    return parte_do_divisor;
+}
+
 vector<char> camada_enlace_dados_transmissora (vector<char> quadro) {
     vector<char> quadro_com_enquadramento;
     quadro_com_enquadramento = camada_enlace_dados_transmissora_enquadramento(quadro);
@@ -106,7 +144,7 @@ vector<char> camada_enlace_dados_transmissora_enquadramento_insercao_de_bytes (v
 }
 
 vector<char> camada_enlace_dados_transmissora_controle_de_erro (vector<char> quadro) {
-    int tipo_de_controle_de_erro = 0;
+    int tipo_de_controle_de_erro = 1;
     vector<char> quadro_com_controle_de_erro;
 
     switch (tipo_de_controle_de_erro) {
@@ -114,6 +152,7 @@ vector<char> camada_enlace_dados_transmissora_controle_de_erro (vector<char> qua
             quadro_com_controle_de_erro = camada_enlace_dados_transmissora_controle_de_erro_bit_paridade_par(quadro);
             break;
         case 1: //CRC
+            quadro_com_controle_de_erro = camada_enlace_dados_transmissora_controle_de_erro_crc(quadro);
             break;
     }
 
@@ -137,13 +176,22 @@ vector<char> camada_enlace_dados_transmissora_controle_de_erro_bit_paridade_par 
 }
 
 vector<char> camada_enlace_dados_transmissora_controle_de_erro_crc (vector<char> quadro) {
-    string polinomio_gerador = "0010";
+    vector<char> polinomio_gerador = {'0', '0', '1', '0'};
+    vector<char> resto_da_divisao;
+    vector<char> quadro_dividendo = quadro;
+
+    for (int i = 0; i < polinomio_gerador.size() - 1; i++) {
+        quadro_dividendo.push_back('0');
+    }
+
+    resto_da_divisao = divisao_de_bit(quadro_dividendo, polinomio_gerador);
+
+    for (char i : resto_da_divisao) {
+        quadro.push_back(i);
+    }
 
     return quadro;
 }
-
-
-
 
 vector<char> camada_enlace_dados_receptora (vector<char> quadro_recebido) {
     vector<char> quadro_deteccao_feita;
@@ -221,7 +269,7 @@ vector<char> camada_enlace_dados_receptora_enquadramento_insercao_de_bytes (vect
 }
 
 vector<char> camada_enlace_dados_receptora_controle_de_erro (vector<char> quadro) {
-    int tipo_de_controle_de_erro = 0;
+    int tipo_de_controle_de_erro = 1;
     vector<char> quadro_controle_feito;
 
     switch (tipo_de_controle_de_erro) {
@@ -229,6 +277,7 @@ vector<char> camada_enlace_dados_receptora_controle_de_erro (vector<char> quadro
             quadro_controle_feito = camada_enlace_dados_receptora_controle_de_erro_bit_paridade_par(quadro);
             break;
         case 1: //CRC
+            quadro_controle_feito = camada_enlace_dados_receptora_controle_de_erro_crc(quadro);
             break;
     }
 
@@ -256,4 +305,27 @@ vector<char> camada_enlace_dados_receptora_controle_de_erro_bit_paridade_par (ve
     return quadro;
 }
 
-// vector<char> camada_enlace_dados_receptora_controle_de_erro_crc (vector<char> quadro) {}
+vector<char> camada_enlace_dados_receptora_controle_de_erro_crc (vector<char> quadro) {
+    vector<char> polinomio_gerador = {'0', '0', '1', '0'};
+    vector<char> resto_da_divisao;
+    resto_da_divisao = divisao_de_bit(quadro, polinomio_gerador);
+
+    char resultado = '0';
+    for (char i : resto_da_divisao) {
+        if (i == '1') {
+            resultado = i;
+            break;
+        }
+    }
+
+    if (resultado == '0') {
+        cout << "Deu certo!" << endl;
+    } else {
+        cout << "ERRO DETECTADO!" << endl;
+    }
+
+    for (int i = 0; i < polinomio_gerador.size() - 1; i++) {
+        quadro.pop_back();
+    }
+    return quadro;
+}

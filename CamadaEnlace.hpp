@@ -28,3 +28,4 @@ vector<char> camada_enlace_dados_receptora_enquadramento_insercao_de_bytes (vect
 
 vector<char> camada_enlace_dados_receptora_controle_de_erro (vector<char> quadro);
 vector<char> camada_enlace_dados_receptora_controle_de_erro_bit_paridade_par (vector<char> quadro);
+vector<char> camada_enlace_dados_receptora_controle_de_erro_crc (vector<char> quadro);
