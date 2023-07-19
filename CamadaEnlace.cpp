@@ -72,19 +72,17 @@ vector<char> divisao_de_bit (vector<char> quadro, vector<char> polinomio_gerador
     return parte_do_divisor;
 }
 
-vector<char> camada_enlace_dados_transmissora (vector<char> quadro) {
+vector<char> camada_enlace_dados_transmissora (vector<char> quadro, int enquadramento, int controle) {
     vector<char> quadro_com_enquadramento;
-    quadro_com_enquadramento = camada_enlace_dados_transmissora_enquadramento(quadro);
+    quadro_com_enquadramento = camada_enlace_dados_transmissora_enquadramento(quadro, enquadramento);
 
     vector<char> quadro_com_controle_de_erro;
-    quadro_com_controle_de_erro = camada_enlace_dados_transmissora_controle_de_erro(quadro_com_enquadramento);
+    quadro_com_controle_de_erro = camada_enlace_dados_transmissora_controle_de_erro(quadro_com_enquadramento, controle);
 
     return quadro_com_controle_de_erro;
 }
 
-vector<char> camada_enlace_dados_transmissora_enquadramento (vector<char> quadro) {
-    int tipo_de_enquadramento = 1;
-
+vector<char> camada_enlace_dados_transmissora_enquadramento (vector<char> quadro, int tipo_de_enquadramento) {
     vector<char> quadro_encapsulado;
 
     switch (tipo_de_enquadramento) {
@@ -99,18 +97,29 @@ vector<char> camada_enlace_dados_transmissora_enquadramento (vector<char> quadro
     return quadro_encapsulado;
 }
 
+
 vector<char> camada_enlace_dados_transmissora_enquadramento_contagem_de_caracteres (vector<char> quadro_bruto) {
-    int tamanho_do_quadro = 8;
+    int tamanho_do_quadro = 3;
     vector<char> quadro_com_cabecalho;
+    string cabecalho_max = converter_mensagem_em_bit(to_string(tamanho_do_quadro));
+
+    string cabecalho;
+    int tamanho_q = 0;
 
     while (quadro_bruto.size() > 0) {
-        vector<char> cabecalho = converter_decimal_em_byte(tamanho_do_quadro);
-
-        for (char bit : cabecalho) {
-            quadro_com_cabecalho.push_back(bit);
+        if (quadro_bruto.size() >= tamanho_do_quadro) {
+            cabecalho = cabecalho_max;
+            tamanho_q = tamanho_do_quadro;      
+        } else {
+            cabecalho = converter_mensagem_em_bit(to_string(quadro_bruto.size()));;
+            tamanho_q = quadro_bruto.size();
+            
         }
 
-        for (int i = 0; i < tamanho_do_quadro; i++) {
+        for (char bit : cabecalho) {
+                quadro_com_cabecalho.push_back(bit);
+        }
+        for (int i = 0; i < tamanho_q; i++) {
             quadro_com_cabecalho.push_back(quadro_bruto[0]);
             quadro_bruto.erase(quadro_bruto.begin());
         }
@@ -143,8 +152,7 @@ vector<char> camada_enlace_dados_transmissora_enquadramento_insercao_de_bytes (v
     return quadro_com_cabecalho;
 }
 
-vector<char> camada_enlace_dados_transmissora_controle_de_erro (vector<char> quadro) {
-    int tipo_de_controle_de_erro = 1;
+vector<char> camada_enlace_dados_transmissora_controle_de_erro (vector<char> quadro, int tipo_de_controle_de_erro) {
     vector<char> quadro_com_controle_de_erro;
 
     switch (tipo_de_controle_de_erro) {
@@ -193,19 +201,17 @@ vector<char> camada_enlace_dados_transmissora_controle_de_erro_crc (vector<char>
     return quadro;
 }
 
-vector<char> camada_enlace_dados_receptora (vector<char> quadro_recebido) {
+vector<char> camada_enlace_dados_receptora (vector<char> quadro_recebido, int enquadramento, int controle) {
     vector<char> quadro_deteccao_feita;
-    quadro_deteccao_feita = camada_enlace_dados_receptora_controle_de_erro(quadro_recebido);
+    quadro_deteccao_feita = camada_enlace_dados_receptora_controle_de_erro(quadro_recebido, controle);
 
     vector<char> quadro_sem_enquadramento;
-    quadro_sem_enquadramento = camada_enlace_dados_receptora_enquadramento(quadro_deteccao_feita);
+    quadro_sem_enquadramento = camada_enlace_dados_receptora_enquadramento(quadro_deteccao_feita, enquadramento);
 
     return quadro_sem_enquadramento;
 }
 
-vector<char> camada_enlace_dados_receptora_enquadramento (vector<char> quadro_encapsulado) {
-    int tipo_de_enquadramento = 1;
-
+vector<char> camada_enlace_dados_receptora_enquadramento (vector<char> quadro_encapsulado, int tipo_de_enquadramento) {
     vector<char> quadro;
 
     switch (tipo_de_enquadramento) {
@@ -221,21 +227,21 @@ vector<char> camada_enlace_dados_receptora_enquadramento (vector<char> quadro_en
 }
 
 vector<char> camada_enlace_dados_receptora_enquadramento_contagem_de_caracteres (vector<char> quadro_bruto) {
-    int tamanho_do_byte = 8;
     vector<char> quadro;
 
     while (quadro_bruto.size() > 0) {
         vector<char> cabecalho;
-        int tamanho_do_quadro;
+        string byte = "";
 
-        for (int i = 0; i < tamanho_do_byte; i++) {
-            cabecalho.push_back(quadro_bruto[0]);
+        for (int i = 0; i < 8; i++) {
+            byte += quadro_bruto[0];
             quadro_bruto.erase(quadro_bruto.begin());
         }
 
-        tamanho_do_quadro = converter_byte_em_decimal(cabecalho);
+        int tamanho_do_quadro = stoi(byte, nullptr, 2);
+        int caractere = static_cast<char>(tamanho_do_quadro) - '0';
 
-        for (int i = 0; i < tamanho_do_quadro; i++) {
+        for (int i = 0; i < caractere; i++) {
             quadro.push_back(quadro_bruto[0]);
             quadro_bruto.erase(quadro_bruto.begin());
         }
@@ -268,8 +274,7 @@ vector<char> camada_enlace_dados_receptora_enquadramento_insercao_de_bytes (vect
     return quadro;
 }
 
-vector<char> camada_enlace_dados_receptora_controle_de_erro (vector<char> quadro) {
-    int tipo_de_controle_de_erro = 1;
+vector<char> camada_enlace_dados_receptora_controle_de_erro (vector<char> quadro, int tipo_de_controle_de_erro) {
     vector<char> quadro_controle_feito;
 
     switch (tipo_de_controle_de_erro) {
