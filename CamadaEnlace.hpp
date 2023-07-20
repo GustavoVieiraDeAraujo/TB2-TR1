@@ -9,7 +9,7 @@
 using namespace std;
 
 vector<char> converter_decimal_em_byte (int numero, int tamanho);
-int converter_byte_em_decimal (vector<char> cabecalho);
+int converter_byte_em_decimal (vector<char> cabecalho, int tamanho);
 
 vector<char> camada_enlace_dados_transmissora (vector<char> quadro, int enquadramento, int controle);
 vector<char> camada_enlace_dados_transmissora_enquadramento (vector<char> quadro, int tipo_de_enquadramento);
