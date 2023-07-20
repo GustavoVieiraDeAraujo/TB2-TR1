@@ -89,7 +89,6 @@ vector<char> divisao_de_bit (vector<char> quadro, vector<char> polinomio_gerador
 }
 
 vector<char> camada_enlace_dados_transmissora (vector<char> quadro, int enquadramento, int controle) {
-    //TODO Inverter o enquadramento com a correção
     vector<char> quadro_com_enquadramento;
     quadro_com_enquadramento = camada_enlace_dados_transmissora_enquadramento(quadro, enquadramento);
 
@@ -239,7 +238,7 @@ vector<char> camada_enlace_dados_transmissora_controle_de_erro_bit_paridade_par 
 // Função para fazer o controle por crc
 vector<char> camada_enlace_dados_transmissora_controle_de_erro_crc (vector<char> quadro) {
     // Define o polinomio gerador
-    vector<char> polinomio_gerador = {'1', '0', '1', '1'};
+    vector<char> polinomio_gerador = {'1', '0', '0', '0', '1', '0', '0', '1', '0', '1', '1', '1', '1', '1', '0', '1'};
     vector<char> resto_da_divisao;
     // Quadro exclusivo para fazer a primeira divisão
     vector<char> quadro_dividendo = quadro;
@@ -261,7 +260,6 @@ vector<char> camada_enlace_dados_transmissora_controle_de_erro_crc (vector<char>
 }
 
 vector<char> camada_enlace_dados_receptora (vector<char> quadro_recebido, int enquadramento, int controle) {
-    //TODO Inverter o enquadramento com a correção
     vector<char> quadro_deteccao_feita;
     quadro_deteccao_feita = camada_enlace_dados_receptora_controle_de_erro(quadro_recebido, controle);
 
@@ -393,7 +391,7 @@ vector<char> camada_enlace_dados_receptora_controle_de_erro_bit_paridade_par (ve
 // Função para desfazer o controle por crc
 vector<char> camada_enlace_dados_receptora_controle_de_erro_crc (vector<char> quadro) {
     // Define o polinomio gerador
-    vector<char> polinomio_gerador = {'1', '0', '1', '1'};
+    vector<char> polinomio_gerador = {'1', '0', '0', '0', '1', '0', '0', '1', '0', '1', '1', '1', '1', '1', '0', '1'};
     vector<char> resto_da_divisao;
     // Faz a divisão de bits e recebe o resto da divisão
     resto_da_divisao = divisao_de_bit(quadro, polinomio_gerador);
@@ -412,7 +410,6 @@ vector<char> camada_enlace_dados_receptora_controle_de_erro_crc (vector<char> qu
         cout << "Deu certo!" << endl;
     } else {
         cout << "ERRO DETECTADO!" << endl;
-        quit(0);
     }
 
     // Retira o resto da divisão do polinomio para retorná-lo
