@@ -1,14 +1,14 @@
 #include "./CamadaEnlace.hpp"
 #include "./CamadaFisica.hpp"
 
-vector<char> converter_decimal_em_byte (int numero) {
-    const int n = 8;
+vector<char> converter_decimal_em_byte (int numero, int tamanho) {
     vector<char> cabecalho;
+    const int n = 8;
  
     string binario = bitset<n>(numero).to_string();
 
-    for (char bit : binario) {
-        cabecalho.push_back(bit);
+    for (int i = binario.size() - tamanho; i < binario.size(); i++) {
+        cabecalho.push_back(binario[i]);
     }
 
     return cabecalho;
@@ -99,7 +99,7 @@ vector<char> camada_enlace_dados_transmissora_enquadramento (vector<char> quadro
 
 
 vector<char> camada_enlace_dados_transmissora_enquadramento_contagem_de_caracteres (vector<char> quadro_bruto) {
-    int tamanho_do_quadro = 3;
+    int tamanho_do_quadro = 5;
     vector<char> quadro_com_cabecalho;
     string cabecalho_max = converter_mensagem_em_bit(to_string(tamanho_do_quadro));
 
@@ -129,9 +129,9 @@ vector<char> camada_enlace_dados_transmissora_enquadramento_contagem_de_caracter
 }
 
 vector<char> camada_enlace_dados_transmissora_enquadramento_insercao_de_bytes (vector<char> quadro_bruto) {
-    int tamanho_do_quadro = 8;
+    int tamanho_do_quadro = 3; // Tamanho do quadro de Bytes (sem considerar os 2 bytes de cabeçalho e possível byte de flag esc)
     vector<char> quadro_com_cabecalho;
-    string flag = "11111111";
+    string flag = "11110000";
     string esc = "00011011";
 
     while (quadro_bruto.size() > 0) {
@@ -139,9 +139,27 @@ vector<char> camada_enlace_dados_transmissora_enquadramento_insercao_de_bytes (v
             quadro_com_cabecalho.push_back(i);
         }
 
+        // Se a quantidade de bytes do quadro a ser enviado é menor que o tamanho_do_quadro, ele envia todos os bytes
+        if (quadro_bruto.size() < tamanho_do_quadro * 8) {
+            tamanho_do_quadro = quadro_bruto.size() / 8;
+        }
+        
         for (int i = 0; i < tamanho_do_quadro; i++) {
-            quadro_com_cabecalho.push_back(quadro_bruto[0]);
-            quadro_bruto.erase(quadro_bruto.begin());
+            string verificador_de_flag = "";
+            for (int x = 0; x < 8; x++) { // Range de 8 para adicionar 8 bits (byte)
+                verificador_de_flag += quadro_bruto[0];
+                quadro_bruto.erase(quadro_bruto.begin());
+            }
+            
+            if (verificador_de_flag == flag) {
+                for (char bit : esc) {
+                    quadro_com_cabecalho.push_back(bit);
+                }    
+            }
+            
+            for (char bit : verificador_de_flag) {
+                quadro_com_cabecalho.push_back(bit);    
+            }
         }
 
         for (char i : flag) {
@@ -251,27 +269,33 @@ vector<char> camada_enlace_dados_receptora_enquadramento_contagem_de_caracteres 
 }
 
 vector<char> camada_enlace_dados_receptora_enquadramento_insercao_de_bytes (vector<char> quadro_bruto) {
-    int tamanho_do_quadro = 8;
-    vector<char> quadro;
-    string flag = "11111111";
+    vector<char> quadro_com_cabecalho;
+    string flag = "11110000";
     string esc = "00011011";
 
     while (quadro_bruto.size() > 0) {
-        for (char i : flag) {
+        string verificador_de_flag = "";
+        for (int x = 0; x < 8; x++) {
+            verificador_de_flag += quadro_bruto[0];
             quadro_bruto.erase(quadro_bruto.begin());
         }
-
-        for (int i = 0; i < tamanho_do_quadro; i++) {
-            quadro.push_back(quadro_bruto[0]);
-            quadro_bruto.erase(quadro_bruto.begin());
+            
+        if (verificador_de_flag == flag) {
+            continue;
+        } else if (verificador_de_flag == esc) {
+            for (int i = 0; i < 8; i++) {
+                quadro_com_cabecalho.push_back(quadro_bruto[0]);
+                quadro_bruto.erase(quadro_bruto.begin());
+                continue;
+            }
         }
-
-        for (char i : flag) {
-            quadro_bruto.erase(quadro_bruto.begin());
+            
+        for (char bit : verificador_de_flag) {
+            quadro_com_cabecalho.push_back(bit);    
         }
     }
-
-    return quadro;
+    
+    return quadro_com_cabecalho;
 }
 
 vector<char> camada_enlace_dados_receptora_controle_de_erro (vector<char> quadro, int tipo_de_controle_de_erro) {
