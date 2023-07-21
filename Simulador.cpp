@@ -28,8 +28,13 @@ int main(void) {
     cin >> controle; // Controle Selecionado
     cout << endl;
 
+    int correcao;
+    cout << "Deseja implementar a correção de Hamming? (Digite somente o número indicado o controle desejado): [0] Não | [1] Sim: ";
+    cin >> controle; // Controle Selecionado
+    cout << endl;
+
     vector<char> quadro_enlace;
-    quadro_enlace = camada_enlace_dados_transmissora(quadro_enviado, enquadramento, controle);
+    quadro_enlace = camada_enlace_dados_transmissora(quadro_enviado, enquadramento, controle, correcao);
 
     cout << "O seguinte sinal esta sendo enviado:" << endl;
     // Imprimindo o sinal completo
@@ -67,7 +72,7 @@ int main(void) {
     cout << endl;
 
     vector<char> quadro_sem_enquadramento;
-    quadro_sem_enquadramento = camada_enlace_dados_receptora(quadro_recebido, enquadramento, controle);
+    quadro_sem_enquadramento = camada_enlace_dados_receptora(quadro_recebido, enquadramento, controle, correcao);
 
     string mensagem_recebida;
     mensagem_recebida = camada_de_aplicacao_receptora(quadro_sem_enquadramento);

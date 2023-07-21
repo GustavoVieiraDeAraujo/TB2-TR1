@@ -3,23 +3,21 @@
 
 // Função para converter um número inteiro em um número binário (não é no formato ASCII)
 // A função já retorna o número binário com a quantidade de casas desejadas
-vector<char> converter_decimal_em_byte (int numero, int tamanho) {
-    vector<char> numero_binario;
+string converter_decimal_em_byte (int numero, int tamanho) {
+    string cabecalho = "";
     const int n = 8;
  
-    // Transforma o inteiro em binário, com 8 algarismos significativos
     string binario = bitset<n>(numero).to_string();
 
-    // Laço para reduzir o número binário na quantidade de casas desejadas
     for (int i = binario.size() - tamanho; i < binario.size(); i++) {
-        numero_binario.push_back(binario[i]);
+        cabecalho.push_back(binario[i]);
     }
 
-    return numero_binario;
+    return cabecalho;
 }
 
 // Função para converter um número binário em um número inteiro (não é no formato ASCII)
-int converter_byte_em_decimal (vector<char> numero_binario, int tamanho) {
+int converter_byte_em_decimal (string numero_binario, int tamanho) {
     int numero_inteiro = 0;
 
     for (char bit : numero_binario) {
@@ -31,7 +29,7 @@ int converter_byte_em_decimal (vector<char> numero_binario, int tamanho) {
         // Transforma um char em int
         int num = bit - '0';
         if (num == 1) {
-            numero_inteiro += pow(2, tamanho);
+            numero_inteiro += pow(2, tamanho - 1);
         }
 
         tamanho--;
@@ -88,14 +86,47 @@ vector<char> divisao_de_bit (vector<char> quadro, vector<char> polinomio_gerador
     return parte_do_divisor;
 }
 
-vector<char> camada_enlace_dados_transmissora (vector<char> quadro, int enquadramento, int controle) {
+vector<char> calcula_hamming (vector<char> quadro) {
+    int tamanho_bit = 1;
+    for (int i = 0; i < quadro.size(); i++) {
+        // Condição para acessar o bit de verificação
+        if (quadro[i] == '-') {
+            int paridade = 0;
+            // Laço para pecorrer todos os bits de mensagem, para analisar se pertence ao bit de verificação
+            for (int x = 0; x < quadro.size(); x++) {
+            // Condição para evitar que o bit de verificação entre na análise
+                if (x == i) {
+                    continue;
+                }
+                // Transformando o índice em um número binário para fazer análise
+                string num_binario = converter_decimal_em_byte(x + 1, tamanho_bit);
+                if (num_binario[0] == '1') {
+                    int num = quadro[x] - '0';
+                    paridade = paridade ^ num;
+                } 
+            }
+            tamanho_bit++;
+            
+            char paridade_char;
+            paridade_char = to_string(paridade)[0];
+            quadro[i] = paridade_char;
+        }
+    }
+    
+    return quadro;
+}
+
+vector<char> camada_enlace_dados_transmissora (vector<char> quadro, int enquadramento, int controle, int correcao) {
     vector<char> quadro_com_enquadramento;
     quadro_com_enquadramento = camada_enlace_dados_transmissora_enquadramento(quadro, enquadramento);
 
     vector<char> quadro_com_controle_de_erro;
     quadro_com_controle_de_erro = camada_enlace_dados_transmissora_controle_de_erro(quadro_com_enquadramento, controle);
 
-    return quadro_com_controle_de_erro;
+    vector<char> quadro_com_correcao;
+    quadro_com_correcao = camada_enlace_dados_receptora_correcao_de_erro(quadro_com_controle_de_erro, correcao);
+
+    return quadro_com_correcao;
 }
 
 vector<char> camada_enlace_dados_transmissora_enquadramento (vector<char> quadro, int tipo_de_enquadramento) {
@@ -200,6 +231,61 @@ vector<char> camada_enlace_dados_transmissora_enquadramento_insercao_de_bytes (v
     return quadro_com_cabecalho;
 }
 
+vector<char> camada_enlace_dados_transmissora_correcao_de_erro (vector<char> quadro, int correcao) {
+    vector<char> quadro_com_correcao;
+
+    switch (correcao) {
+        case 0:
+            quadro_com_correcao = quadro;
+            break;
+
+        case 1:
+            vector<char> quadro_separado;
+            quadro_com_correcao = camada_enlace_dados_transmissora_correcao_de_erro_hamming(quadro);
+    }
+
+    return quadro_com_correcao;
+}
+
+vector<char> camada_enlace_dados_transmissora_correcao_de_erro_hamming (vector<char> quadro) {
+    int tamanho_mensagem = quadro.size();
+    int numero_expoente = 0;
+    
+    vector<char> quadro_bit_de_mensagem = quadro;
+    vector<char> quadro_hamming;
+
+    // Descobrir quantos bits de verificação o quadro possui
+    while (true) {
+        if (pow(2, numero_expoente) > tamanho_mensagem + numero_expoente + 1) {
+            break;
+        }
+
+        numero_expoente++;
+    }
+
+    // Calculando o tamanho total do quadro final
+    int tamanho_quadro = tamanho_mensagem + numero_expoente;
+
+    // Adicionando os bits de mensagem no quadro resultante
+    int flag_bit_verificacao = 0;
+    for (int i = 0; i < tamanho_quadro; i++) {
+        // Se o index for uma potência de dois, é a posição de um bit de verificação
+        if (pow(2, flag_bit_verificacao) == i + 1) {
+            // Por enquanto o bit de verificação está sem valor
+            quadro_hamming.push_back('-');
+            flag_bit_verificacao++;
+        } else {
+            quadro_hamming.push_back(quadro.front());
+            quadro.erase(quadro.begin());
+        }
+    }
+    
+    int tamanho_bit = 1;
+    quadro_hamming = calcula_hamming(quadro_hamming);
+    
+    return quadro_hamming;
+}
+
 vector<char> camada_enlace_dados_transmissora_controle_de_erro (vector<char> quadro, int tipo_de_controle_de_erro) {
     vector<char> quadro_com_controle_de_erro;
 
@@ -259,9 +345,12 @@ vector<char> camada_enlace_dados_transmissora_controle_de_erro_crc (vector<char>
     return quadro;
 }
 
-vector<char> camada_enlace_dados_receptora (vector<char> quadro_recebido, int enquadramento, int controle) {
+vector<char> camada_enlace_dados_receptora (vector<char> quadro_recebido, int enquadramento, int controle, int correcao) {
+    vector<char> quadro_corrigido;
+    quadro_corrigido = camada_enlace_dados_receptora_correcao_de_erro(quadro_recebido, correcao);
+
     vector<char> quadro_deteccao_feita;
-    quadro_deteccao_feita = camada_enlace_dados_receptora_controle_de_erro(quadro_recebido, controle);
+    quadro_deteccao_feita = camada_enlace_dados_receptora_controle_de_erro(quadro_corrigido, controle);
 
     vector<char> quadro_sem_enquadramento;
     quadro_sem_enquadramento = camada_enlace_dados_receptora_enquadramento(quadro_deteccao_feita, enquadramento);
@@ -346,6 +435,82 @@ vector<char> camada_enlace_dados_receptora_enquadramento_insercao_de_bytes (vect
     }
     
     return quadro_com_cabecalho;
+}
+
+vector<char> camada_enlace_dados_receptora_correcao_de_erro (vector<char> quadro, int correcao) {
+    vector<char> quadro_com_correcao;
+
+    switch (correcao) {
+        case 0:
+            quadro_com_correcao = quadro;
+            break;
+
+        case 1:
+            quadro_com_correcao = camada_enlace_dados_transmissora_correcao_de_erro_hamming(quadro);
+
+    }
+
+    return quadro_com_correcao;
+}
+
+vector<char> camada_enlace_dados_receptora_correcao_de_erro_hamming (vector<char> quadro) {
+    vector<char> quadro_corrigido;
+    vector<char> quadro_novo = quadro;
+    int flag_bit_verificacao = 0;
+    vector<char> bits_de_verificacao_recebidos;
+    vector<char> bits_de_verificacao_calculados;
+    
+    // Retirando os bits de verificação do código
+    for (int i = 0; i < quadro_novo.size(); i++) {
+        if (pow(2, flag_bit_verificacao) == i + 1) {
+            bits_de_verificacao_recebidos.push_back(quadro_novo[i]);
+            quadro_novo[i] = '-';
+            flag_bit_verificacao++;
+        }
+    }
+    
+    vector<char> quadro_calculado;
+    quadro_calculado = calcula_hamming(quadro_novo);
+    
+    // Retirando os bits de verificação do código calculado
+    flag_bit_verificacao = 0;
+    for (int i = 0; i < quadro_calculado.size(); i++) {
+        if (pow(2, flag_bit_verificacao) == i + 1) {
+            bits_de_verificacao_calculados.push_back(quadro_calculado[i]);
+            flag_bit_verificacao++;
+        }
+    }
+    
+    // Compara os bits de verificação
+    for (int i = 0; i < bits_de_verificacao_calculados.size(); i++) {
+        if (bits_de_verificacao_calculados[i] != bits_de_verificacao_recebidos[i]) {
+            string local_do_erro = "";
+            cout << "ERRO ENCONTRADO DURANTE A CORREÇÃO!" << endl;
+            for (int x = 0 ; x < bits_de_verificacao_calculados.size(); x++) {
+                int calculado_int = bits_de_verificacao_calculados[x] - '0';
+                int recebido_int = bits_de_verificacao_recebidos[x] - '0';
+                int erro =  calculado_int ^ recebido_int;
+                string erro_string = to_string(erro);
+                
+                local_do_erro = erro_string[0] + local_do_erro;
+            }
+            
+            int local_do_erro_index;
+            local_do_erro_index = converter_byte_em_decimal(local_do_erro, local_do_erro.size());
+            // Correção do erro
+            char troca = quadro[local_do_erro_index - 1];
+            if (troca == '0') {
+                quadro[local_do_erro_index - 1] = '1';
+            } else {
+                quadro[local_do_erro_index - 1] = '0';
+            }
+            cout << "ERRO CORRIGIDO!" << endl;
+            break;
+        }
+    }
+    
+    quadro_corrigido = quadro;
+    return quadro_corrigido;
 }
 
 vector<char> camada_enlace_dados_receptora_controle_de_erro (vector<char> quadro, int tipo_de_controle_de_erro) {
